@@ -1,0 +1,7 @@
+coverage_service: coveralls
+workspace: ResolvingContainer.xcworkspace
+xcodeproj: ResolvingContainer.xcodeproj
+scheme: ResolvingContainer
+ignore:
+  - ../*
+  - ResolvingContainerTests/*
