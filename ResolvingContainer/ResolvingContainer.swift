@@ -31,7 +31,7 @@
 
 import Foundation
 
-public class ResolvingContainer {
+open class ResolvingContainer {
     
     private var entries: [ObjectIdentifier: () -> Any]
     private var syncQueue: DispatchQueue
@@ -41,11 +41,11 @@ public class ResolvingContainer {
         syncQueue = DispatchQueue(label: "ResolvingContainer.SyncQueue", qos: qos, attributes: .concurrent)
     }
     
-    public func register<T>(resolver: @escaping () -> T) {
+    open func register<T>(resolver: @escaping () -> T) {
         syncQueue.sync { entries[ObjectIdentifier(T.self)] = resolver }
     }
     
-    public func register<T>(instance resolver: @escaping @autoclosure () -> T) {
+    open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
         syncQueue.sync(flags: .barrier) {
             entries[ObjectIdentifier(T.self)] = { [unowned self] in
                 let instance = resolver()
@@ -58,7 +58,7 @@ public class ResolvingContainer {
     }
 
     @discardableResult
-    public func unregister<T>(_ type: T.Type) -> T? {
+    open func unregister<T>(_ type: T.Type) -> T? {
         return syncQueue.sync(flags: .barrier) {
             if let resolve = entries.removeValue(forKey: ObjectIdentifier(T.self)) {
                 return resolve() as? T
@@ -67,11 +67,11 @@ public class ResolvingContainer {
         }
     }
 
-    public func unregisterAll() {
+    open func unregisterAll() {
         syncQueue.sync(flags: .barrier) { entries.removeAll() }
     }
     
-    public func resolve<T>(_ type: T.Type = T.self) -> T? {
+    open func resolve<T>(_ type: T.Type = T.self) -> T? {
         guard let resolver = syncQueue.sync(execute: { entries[ObjectIdentifier(T.self)] }) else {
             return nil
         }
