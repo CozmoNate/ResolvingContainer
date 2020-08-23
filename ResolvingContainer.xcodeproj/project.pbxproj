@@ -87,8 +87,8 @@
 		7EA1A7D122F7CEA1007A588A /* ResolvingContainer */ = {
 			isa = PBXGroup;
 			children = (
-				2F403B0C24E7E5FC00D04DE4 /* ResolvingContainer.swift */,
 				7EA1A7D222F7CEA1007A588A /* ResolvingContainer.h */,
+				2F403B0C24E7E5FC00D04DE4 /* ResolvingContainer.swift */,
 				7EA1A7D322F7CEA1007A588A /* Info.plist */,
 			);
 			path = ResolvingContainer;
