@@ -26,4 +26,4 @@ script:
   - xcodebuild clean test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=YES ENABLE_TESTABILITY=YES | xcpretty;
 
 after_success:
-  - cd $TRAVIS_BUILD_DIR && slather
+  - slather
