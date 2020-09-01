@@ -10,11 +10,11 @@
 		2F0760F024E7F2AE00A91409 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 2F0760EF24E7F2AE00A91409 /* LICENSE */; };
 		2F07614124E8047400A91409 /* ResolvingContainer.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 2F07614024E8047400A91409 /* ResolvingContainer.podspec */; };
 		2F403B0D24E7E5FC00D04DE4 /* ResolvingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F403B0C24E7E5FC00D04DE4 /* ResolvingContainer.swift */; };
+		2F58254D24FEBBDC00EE543D /* Quick in Frameworks */ = {isa = PBXBuildFile; productRef = 2F58254C24FEBBDC00EE543D /* Quick */; };
+		2F58255024FEBBEB00EE543D /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 2F58254F24FEBBEB00EE543D /* Nimble */; };
 		7EA1A7D922F7CEA1007A588A /* ResolvingContainer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EA1A7CF22F7CEA1007A588A /* ResolvingContainer.framework */; };
 		7EA1A7DE22F7CEA1007A588A /* ResolvingContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EA1A7DD22F7CEA1007A588A /* ResolvingContainerTests.swift */; };
 		7EA1A7E022F7CEA1007A588A /* ResolvingContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7EA1A7D222F7CEA1007A588A /* ResolvingContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		7EA1A7F422F7CF64007A588A /* Quick in Frameworks */ = {isa = PBXBuildFile; productRef = 7EA1A7F322F7CF64007A588A /* Quick */; };
-		7EA1A7F722F7D254007A588A /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 7EA1A7F622F7D254007A588A /* Nimble */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,8 +53,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7EA1A7F722F7D254007A588A /* Nimble in Frameworks */,
-				7EA1A7F422F7CF64007A588A /* Quick in Frameworks */,
+				2F58255024FEBBEB00EE543D /* Nimble in Frameworks */,
+				2F58254D24FEBBDC00EE543D /* Quick in Frameworks */,
 				7EA1A7D922F7CEA1007A588A /* ResolvingContainer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -152,8 +152,8 @@
 			);
 			name = ResolvingContainerTests;
 			packageProductDependencies = (
-				7EA1A7F322F7CF64007A588A /* Quick */,
-				7EA1A7F622F7D254007A588A /* Nimble */,
+				2F58254C24FEBBDC00EE543D /* Quick */,
+				2F58254F24FEBBEB00EE543D /* Nimble */,
 			);
 			productName = ResolverTests;
 			productReference = 7EA1A7D822F7CEA1007A588A /* ResolvingContainerTests.xctest */;
@@ -188,8 +188,8 @@
 			);
 			mainGroup = 7EA1A7C522F7CEA0007A588A;
 			packageReferences = (
-				7EA1A7F222F7CF64007A588A /* XCRemoteSwiftPackageReference "Quick" */,
-				7EA1A7F522F7D254007A588A /* XCRemoteSwiftPackageReference "Nimble" */,
+				2F58254B24FEBBDC00EE543D /* XCRemoteSwiftPackageReference "Quick" */,
+				2F58254E24FEBBEB00EE543D /* XCRemoteSwiftPackageReference "Nimble" */,
 			);
 			productRefGroup = 7EA1A7D022F7CEA1007A588A /* Products */;
 			projectDirPath = "";
@@ -490,33 +490,33 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		7EA1A7F222F7CF64007A588A /* XCRemoteSwiftPackageReference "Quick" */ = {
+		2F58254B24FEBBDC00EE543D /* XCRemoteSwiftPackageReference "Quick" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Quick.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
 			};
 		};
-		7EA1A7F522F7D254007A588A /* XCRemoteSwiftPackageReference "Nimble" */ = {
+		2F58254E24FEBBEB00EE543D /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.1.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		7EA1A7F322F7CF64007A588A /* Quick */ = {
+		2F58254C24FEBBDC00EE543D /* Quick */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7EA1A7F222F7CF64007A588A /* XCRemoteSwiftPackageReference "Quick" */;
+			package = 2F58254B24FEBBDC00EE543D /* XCRemoteSwiftPackageReference "Quick" */;
 			productName = Quick;
 		};
-		7EA1A7F622F7D254007A588A /* Nimble */ = {
+		2F58254F24FEBBEB00EE543D /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7EA1A7F522F7D254007A588A /* XCRemoteSwiftPackageReference "Nimble" */;
+			package = 2F58254E24FEBBEB00EE543D /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 /* End XCSwiftPackageProductDependency section */
