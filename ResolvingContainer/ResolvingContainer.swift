@@ -48,11 +48,11 @@ open class ResolvingContainer {
     open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
         syncQueue.sync(flags: .barrier) {
             entries[ObjectIdentifier(T.self)] = { [unowned self] in
-                let instance = resolver()
-                self.syncQueue.async(flags: .barrier) {
+                return self.syncQueue.sync(flags: .barrier) {
+                    let instance = resolver()
                     self.entries[ObjectIdentifier(T.self)] = { instance }
+                    return instance
                 }
-                return instance
             }
         }
     }
