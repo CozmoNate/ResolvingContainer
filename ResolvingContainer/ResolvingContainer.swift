@@ -42,13 +42,13 @@ open class ResolvingContainer {
     }
     
     open func register<T>(resolver: @escaping () -> T) {
-        syncQueue.sync { entries[ObjectIdentifier(T.self)] = resolver }
+        barrierSync { entries[ObjectIdentifier(T.self)] = resolver }
     }
     
     open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
-        syncQueue.sync(flags: .barrier) {
+        barrierSync {
             entries[ObjectIdentifier(T.self)] = { [unowned self] in
-                return self.syncQueue.sync(flags: .barrier) {
+                barrierSync {
                     let instance = resolver()
                     self.entries[ObjectIdentifier(T.self)] = { instance }
                     return instance
@@ -59,22 +59,48 @@ open class ResolvingContainer {
 
     @discardableResult
     open func unregister<T>(_ type: T.Type) -> T? {
-        return syncQueue.sync(flags: .barrier) {
-            if let resolve = entries.removeValue(forKey: ObjectIdentifier(T.self)) {
-                return resolve() as? T
-            }
+        guard let resolve = barrierSync({ entries.removeValue(forKey: ObjectIdentifier(T.self)) }) else {
             return nil
         }
+        return resolve() as? T
     }
 
     open func unregisterAll() {
-        syncQueue.sync(flags: .barrier) { entries.removeAll() }
+        barrierSync { entries.removeAll() }
     }
     
     open func resolve<T>(_ type: T.Type = T.self) -> T? {
-        guard let resolver = syncQueue.sync(execute: { entries[ObjectIdentifier(T.self)] }) else {
+        guard let resolver = looseSync({ entries[ObjectIdentifier(T.self)] }) else {
             return nil
         }
         return resolver() as? T
+    }
+}
+
+internal extension ResolvingContainer {
+    func looseSync<T>(_ block: () throws -> T) rethrows -> T {
+        if DispatchQueue.isRunning(on: syncQueue) {
+            return try block()
+        } else {
+            return try syncQueue.sync(execute: block)
+        }
+    }
+    
+    func barrierSync<T>(_ block: () throws -> T) rethrows -> T {
+        return try syncQueue.sync(flags: .barrier, execute: block)
+    }
+}
+
+internal let ResolvingContainerQueueIdentifierKey = DispatchSpecificKey<UUID>()
+
+internal extension DispatchQueue {
+    
+    static func isRunning(on queue: DispatchQueue) -> Bool {
+        var identifier: UUID! = queue.getSpecific(key: ResolvingContainerQueueIdentifierKey)
+        if identifier == nil {
+            identifier = UUID()
+            queue.setSpecific(key: ResolvingContainerQueueIdentifierKey, value: identifier)
+        }
+        return DispatchQueue.getSpecific(key: ResolvingContainerQueueIdentifierKey) == identifier
     }
 }
