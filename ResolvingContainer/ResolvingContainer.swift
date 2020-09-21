@@ -42,35 +42,33 @@ open class ResolvingContainer {
     }
     
     open func register<T>(resolver: @escaping () -> T) {
-        barrierSync { entries[ObjectIdentifier(T.self)] = resolver }
+        barrier { entries[ObjectIdentifier(T.self)] = resolver }
     }
     
     open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
-        barrierSync {
+        barrier {
             entries[ObjectIdentifier(T.self)] = { [unowned self] in
-                barrierSync {
-                    let instance = resolver()
-                    self.entries[ObjectIdentifier(T.self)] = { instance }
-                    return instance
-                }
+                let instance = resolver()
+                safe { self.entries[ObjectIdentifier(T.self)] = { instance } }
+                return instance
             }
         }
     }
 
     @discardableResult
     open func unregister<T>(_ type: T.Type) -> T? {
-        guard let resolve = barrierSync({ entries.removeValue(forKey: ObjectIdentifier(T.self)) }) else {
+        guard let resolve = barrier({ entries.removeValue(forKey: ObjectIdentifier(T.self)) }) else {
             return nil
         }
         return resolve() as? T
     }
 
     open func unregisterAll() {
-        barrierSync { entries.removeAll() }
+        barrier { entries.removeAll() }
     }
     
     open func resolve<T>(_ type: T.Type = T.self) -> T? {
-        guard let resolver = looseSync({ entries[ObjectIdentifier(T.self)] }) else {
+        guard let resolver = sync({ entries[ObjectIdentifier(T.self)] }) else {
             return nil
         }
         return resolver() as? T
@@ -78,16 +76,24 @@ open class ResolvingContainer {
 }
 
 internal extension ResolvingContainer {
-    func looseSync<T>(_ block: () throws -> T) rethrows -> T {
+    func sync<T>(_ block: () -> T) -> T {
         if DispatchQueue.isRunning(on: syncQueue) {
-            return try block()
+            return block()
         } else {
-            return try syncQueue.sync(execute: block)
+            return syncQueue.sync(execute: block)
         }
     }
     
-    func barrierSync<T>(_ block: () throws -> T) rethrows -> T {
-        return try syncQueue.sync(flags: .barrier, execute: block)
+    func barrier<T>(_ block: () -> T) -> T {
+        return syncQueue.sync(flags: .barrier, execute: block)
+    }
+    
+    func safe(_ block: @escaping () -> Void) {
+        if DispatchQueue.isRunning(on: syncQueue) {
+            syncQueue.async(flags: .barrier, execute: block)
+        } else {
+            syncQueue.sync(flags: .barrier, execute: block)
+        }
     }
 }
 
