@@ -33,7 +33,7 @@ import Foundation
 
 open class ResolvingContainer {
     
-    private class Item {
+    public class Item {
         
         enum Stance {
             case resolution
@@ -72,9 +72,8 @@ open class ResolvingContainer {
         }
     }
     
-    private var registry: [ObjectIdentifier: Item]
-    private var syncQueue: DispatchQueue
-    
+    public var registry: [ObjectIdentifier: Item]
+    public var syncQueue: DispatchQueue
     
     public init(qos: DispatchQoS = .default) {
         registry = [:]
