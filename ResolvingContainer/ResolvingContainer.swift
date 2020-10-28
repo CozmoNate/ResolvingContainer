@@ -36,25 +36,25 @@ open class ResolvingContainer {
     public class Item {
         
         public enum Role {
-            case resolution
-            case instantiation
+            case factory
+            case singleton
         }
         
         public let role: Role
         public let produce: () -> Any
         
-        public var instance: Any? = nil
+        public private(set) var instance: Any? = nil
         
-        public init(stance: Role, resolver: @escaping () -> Any) {
-            self.role = stance
+        public init(role: Role, resolver: @escaping () -> Any) {
+            self.role = role
             self.produce = resolver
         }
         
         public func resolve<T>(as class: T.Type = T.self) -> T? {
             switch role {
-            case .resolution:
+            case .factory:
                 return produce() as? T
-            case .instantiation:
+            case .singleton:
                 if instance == nil { instance = produce() }
                 return instance as? T
             }
@@ -78,13 +78,13 @@ open class ResolvingContainer {
     /// Registers resolver of of the objects of specified type in the container
     /// - Parameter resolver: The resolver closure
     open func register<T>(resolver: @escaping () -> T) {
-        sync { registry[ObjectIdentifier(T.self)] = Item(stance: .resolution, resolver: resolver) }
+        sync { registry[ObjectIdentifier(T.self)] = Item(role: .factory, resolver: resolver) }
     }
     
     /// Registers instance of the object in the container
     /// - Parameter resolver: The instance of the object
     open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
-        sync { registry[ObjectIdentifier(T.self)] = Item(stance: .instantiation, resolver: resolver) }
+        sync { registry[ObjectIdentifier(T.self)] = Item(role: .singleton, resolver: resolver) }
     }
     
     /// Unregisters objects of specified type from the container
@@ -102,24 +102,14 @@ open class ResolvingContainer {
     /// - Parameter type: The type of the objects to resolve
     /// - Returns: The instance of the object or nil if wasn't registered before
     open func resolve<T>(_ type: T.Type = T.self) -> T? {
-        sync {
-            guard let item = registry[ObjectIdentifier(T.self)] else {
-                return nil
-            }
-            return item.resolve()
-        }
+        sync { registry[ObjectIdentifier(T.self)]?.resolve() }
     }
     
     /// Discard the instance of the object if registered before as a singleton
     /// - Parameter instance: The type of the object to discard its instance from the container
     /// - Returns: The discarded instance of the object or nil
     @discardableResult open func discard<T>(_ instance: T.Type = T.self) -> T? {
-        sync {
-            guard let item = registry[ObjectIdentifier(T.self)] else {
-                return nil
-            }
-            return item.discard()
-        }
+        sync { registry[ObjectIdentifier(T.self)]?.discard() }
     }
     
     @discardableResult open func sync<T>(_ block: () -> T) -> T {
