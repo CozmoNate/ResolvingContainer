@@ -35,23 +35,23 @@ open class ResolvingContainer {
     
     public class Item {
         
-        enum Stance {
+        public enum Role {
             case resolution
             case instantiation
         }
         
-        let stance: Stance
-        let produce: () -> Any
+        public let role: Role
+        public let produce: () -> Any
         
-        var instance: Any? = nil
+        public var instance: Any? = nil
         
-        init(stance: Stance, resolver: @escaping () -> Any) {
-            self.stance = stance
+        public init(stance: Role, resolver: @escaping () -> Any) {
+            self.role = stance
             self.produce = resolver
         }
         
-        func resolve<T>(as class: T.Type = T.self) -> T? {
-            switch stance {
+        public func resolve<T>(as class: T.Type = T.self) -> T? {
+            switch role {
             case .resolution:
                 return produce() as? T
             case .instantiation:
@@ -60,15 +60,10 @@ open class ResolvingContainer {
             }
         }
         
-        func discard<T>(as class: T.Type = T.self) -> T? {
-            switch stance {
-            case .resolution:
-                return nil
-            case .instantiation:
-                guard let instance = instance else { return nil }
-                self.instance = nil
-                return instance as? T
-            }
+        public func discard<T>(as class: T.Type = T.self) -> T? {
+            guard let instance = instance else { return nil }
+            self.instance = nil
+            return instance as? T
         }
     }
     
