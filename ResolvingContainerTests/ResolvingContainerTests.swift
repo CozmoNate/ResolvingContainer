@@ -104,6 +104,72 @@ class ResolvingContainerTests: QuickSpec {
                     }
                 }
             }
+            
+            context("when registered provisional instance") {
+
+                beforeEach {
+                    container.register(provisional: TestValue())
+                }
+
+                it("each time resolves to different instance if not captured strongly") {
+                    let instance = container.resolve(TestValue.self)
+                    expect(container.resolve(TestValue.self)).to(beIdenticalTo(instance))
+                    expect(container.resolve(TestTest<Int>.self)).to(beIdenticalTo(instance))
+                }
+                
+                context("when resolved the instance and captured it strongly") {
+
+                    var instance: TestValue!
+
+                    beforeEach {
+                        instance = container.resolve(TestValue.self)
+                    }
+
+                    it("can resolve it later") {
+                        expect(container.resolve(TestValue.self)).to(beIdenticalTo(instance))
+                        expect(container.resolve(TestTest<Int>.self)).to(beIdenticalTo(instance))
+                    }
+
+                    context("and discarded the instance") {
+                        var discarded: Any!
+                        
+                        beforeEach {
+                            discarded = container.discard(TestValue.self)
+                        }
+                        
+                        it("discarded to initial instance") {
+                            expect(discarded).to(beIdenticalTo(instance))
+                        }
+
+                        it("resolves to different instance") {
+                            expect(container.resolve(TestValue.self)).notTo(beIdenticalTo(instance))
+                        }
+                    }
+                }
+
+                context("and unregistered object") {
+                    
+                    beforeEach {
+                        container.unregister(TestValue.self)
+                    }
+
+                    it("fails to resolve the type") {
+                        expect(container.resolve(TestValue.self)).to(beNil())
+                        expect(container.resolve(TestTest<Int>.self)).to(beNil())
+                    }
+                }
+                context("and unregistered all objects") {
+
+                    beforeEach {
+                        container.unregisterAll()
+                    }
+
+                    it("fails to resolve any type") {
+                        expect(container.resolve(TestValue.self)).to(beNil())
+                        expect(container.resolve(TestTest<Int>.self)).to(beNil())
+                    }
+                }
+            }
         }
     }
 }

@@ -35,35 +35,65 @@ open class ResolvingContainer {
     
     public class Item {
         
+        public struct Reference {
+            weak var value: AnyObject?
+        }
+        
         public enum Role {
-            case factory
-            case singleton
+            case factory(resolver: () -> Any)
+            case singleton(resolver: () -> Any)
+            case provisional(resolver: () -> AnyObject)
         }
         
-        public let role: Role
-        public let produce: () -> Any
-        
-        public private(set) var instance: Any? = nil
-        
-        public init(role: Role, resolver: @escaping () -> Any) {
-            self.role = role
-            self.produce = resolver
-        }
-        
-        public func resolve<T>(as class: T.Type = T.self) -> T? {
-            switch role {
-            case .factory:
-                return produce() as? T
-            case .singleton:
-                if instance == nil { instance = produce() }
-                return instance as? T
+        public enum Storage {
+            case none
+            case instance(Any)
+            case reference(Reference)
+            
+            func unwrap<T>(as type: T.Type = T.self) -> T? {
+                switch self {
+                case .instance(let instance):
+                    return instance as? T
+                case .reference(let reference):
+                    return reference.value as? T
+                case .none:
+                    return nil
+                }
             }
         }
         
-        public func discard<T>(as class: T.Type = T.self) -> T? {
-            guard let instance = instance else { return nil }
-            self.instance = nil
-            return instance as? T
+        public let role: Role
+        public private(set) var storage: Storage = .none
+        
+        public init(role: Role) {
+            self.role = role
+        }
+        
+        public func resolve<T>(as type: T.Type = T.self) -> T? {
+            switch role {
+            case .factory(let resolve):
+                return resolve() as? T
+            case .singleton(let resolve):
+                guard let instance = storage.unwrap(as: T.self) else {
+                    let instance = resolve()
+                    storage = .instance(instance)
+                    return instance as? T
+                }
+                return instance
+            case .provisional(let resolve):
+                guard let instance = storage.unwrap(as: T.self) else {
+                    let instance = resolve()
+                    storage = .reference(Reference(value: instance))
+                    return instance as? T
+                }
+                return instance
+            }
+        }
+        
+        public func discard<T>(as type: T.Type = T.self) -> T? {
+            let instance = storage.unwrap(as: T.self)
+            storage = .none
+            return instance
         }
     }
     
@@ -75,16 +105,22 @@ open class ResolvingContainer {
         syncQueue = DispatchQueue(label: "ResolvingContainer.SyncQueue", qos: qos)
     }
     
-    /// Registers resolver of of the objects of specified type in the container
+    /// Registers resolver of any object in the container
     /// - Parameter resolver: The resolver closure
     open func register<T>(resolver: @escaping () -> T) {
-        sync { registry[ObjectIdentifier(T.self)] = Item(role: .factory, resolver: resolver) }
+        sync { registry[ObjectIdentifier(T.self)] = Item(role: .factory(resolver: resolver)) }
     }
     
-    /// Registers instance of the object in the container
+    /// Registers instance of any object in the container
     /// - Parameter resolver: The instance of the object
     open func register<T>(instance resolver: @escaping @autoclosure () -> T) {
-        sync { registry[ObjectIdentifier(T.self)] = Item(role: .singleton, resolver: resolver) }
+        sync { registry[ObjectIdentifier(T.self)] = Item(role: .singleton(resolver: resolver)) }
+    }
+    
+    /// Registers instance of a class in the container which is stored as a weak reference after resolution.
+    /// - Parameter resolver: The instance of the object
+    open func register<T: AnyObject>(provisional resolver: @escaping @autoclosure () -> T) {
+        sync { registry[ObjectIdentifier(T.self)] = Item(role: .provisional(resolver: resolver)) }
     }
     
     /// Unregisters objects of specified type from the container
