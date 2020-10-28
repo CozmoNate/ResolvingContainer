@@ -91,6 +91,23 @@ class ResolvingContainerTests: QuickSpec {
                         expect(container.resolve(TestValue.self)).notTo(beIdenticalTo(instance))
                     }
                 }
+                
+                context("and discarded all instances") {
+                    
+                    beforeEach {
+                        container.discardAll()
+                    }
+                    
+                    it("removed all instances from registry") {
+                        let result = container.registry.values.reduce(into: true) { (result, item) in
+                            guard result, case ResolvingContainer.Item.Storage.none = item.storage else {
+                                result = false
+                                return
+                            }
+                        }
+                        expect(result).to(beTrue())
+                    } 
+                }
 
                 context("and unregistered all objects") {
 
@@ -158,6 +175,7 @@ class ResolvingContainerTests: QuickSpec {
                         expect(container.resolve(TestTest<Int>.self)).to(beNil())
                     }
                 }
+                
                 context("and unregistered all objects") {
 
                     beforeEach {

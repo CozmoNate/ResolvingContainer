@@ -141,11 +141,16 @@ open class ResolvingContainer {
         sync { registry[ObjectIdentifier(T.self)]?.resolve() }
     }
     
-    /// Discard the instance of the object if registered before as a singleton
+    /// Discards the instance of an object if was resolved before, otherwise ignored and nil returned
     /// - Parameter instance: The type of the object to discard its instance from the container
     /// - Returns: The discarded instance of the object or nil
     @discardableResult open func discard<T>(_ instance: T.Type = T.self) -> T? {
         sync { registry[ObjectIdentifier(T.self)]?.discard() }
+    }
+    
+    /// Discards all the instances resolved up until now
+    open func discardAll() {
+        sync { registry.values.forEach { $0.discard() } }
     }
     
     @discardableResult open func sync<T>(_ block: () -> T) -> T {
