@@ -29,7 +29,13 @@ class ResolvingContainerTests: QuickSpec {
                 beforeEach {
                     container.register(resolver: { TestValue() })
                 }
-
+                
+                it("instance not stored in the container") {
+                    expect(container.isInstantiated(TestValue.self)).to(beFalse())
+                    expect(container.resolve(TestValue.self)).to(beAKindOf(TestValue.self))
+                    expect(container.isInstantiated(TestValue.self)).to(beFalse())
+                }
+                
                 it("each time resolves to different instance") {
                     let first = container.resolve(TestValue.self)
                     expect(first).to(beAKindOf(TestValue.self))
@@ -50,7 +56,7 @@ class ResolvingContainerTests: QuickSpec {
                 }
             }
 
-            context("when registered instance") {
+            context("when registered an instance") {
 
                 var instance: TestValue!
 
@@ -64,6 +70,10 @@ class ResolvingContainerTests: QuickSpec {
                     expect(container.resolve(TestTest<Int>.self)).to(beIdenticalTo(instance))
                 }
 
+                it("instance is stored in the container") {
+                    expect(container.isInstantiated(TestValue.self)).to(beTrue())
+                }
+                
                 context("and unregistered object") {
                     
                     beforeEach {
@@ -128,10 +138,12 @@ class ResolvingContainerTests: QuickSpec {
                     container.register(provisional: TestValue())
                 }
 
-                it("each time resolves to different instance if not captured strongly") {
-                    let instance = container.resolve(TestValue.self)
+                it("instance is stored in the container while captured strongly outside") {
+                    var instance = container.resolve(TestValue.self)
                     expect(container.resolve(TestValue.self)).to(beIdenticalTo(instance))
                     expect(container.resolve(TestTest<Int>.self)).to(beIdenticalTo(instance))
+                    instance = nil
+                    expect(container.isInstantiated(TestValue.self)).to(beFalse())
                 }
                 
                 context("when resolved the instance and captured it strongly") {

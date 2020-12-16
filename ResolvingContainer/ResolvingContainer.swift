@@ -141,6 +141,12 @@ open class ResolvingContainer {
         sync { registry[ObjectIdentifier(T.self)]?.resolve() }
     }
     
+    
+    /// Returns true if the object is registered and the type of the resolver is "singleton" and it has been accessed once and its instance is stored in the container. 
+    open func isInstantiated<T>(_ type: T.Type) -> Bool {
+        sync { registry[ObjectIdentifier(T.self)]?.storage.unwrap(as: T.self) != nil }
+    }
+    
     /// Discards the instance of an object if was resolved before, otherwise ignored and nil returned
     /// - Parameter instance: The type of the object to discard its instance from the container
     /// - Returns: The discarded instance of the object or nil
